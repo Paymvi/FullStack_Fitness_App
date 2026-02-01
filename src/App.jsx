@@ -1,35 +1,77 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [showLog, setShowLog] = useState(false);
+  const [exerciseInput, setExerciseInput] = useState("");
+  const [exercises, setExercises] = useState([]);
+  const [jsonOutput, setJsonOutput] = useState(null);
+
+  const addExercise = () => {
+    if (exerciseInput.trim() === "") return; // Catches empty inputs and stops it early
+
+    setExercises([...exercises, exerciseInput]); // Adds exercise
+     
+    setExerciseInput(""); // Deletes input after added
+  };
+
+  // This makes the JSON
+  const submitLog = () => {
+    const log = {
+      date: new Date().toISOString(),
+      exercises: exercises,
+    };
+
+    setJsonOutput(JSON.stringify(log, null, 2));
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app">
+
+      {/* Frontend Magic */}
+      <h1>Fitness Diary 🏋️‍♂️</h1>
+
+      <button onClick={() => setShowLog(true)}>
+        Make the fitness log
+      </button>
+
+      {showLog && (
+        <div className="log-card">
+
+          {/* Standard input box */}
+          <input
+            type="text"
+            placeholder="Enter exercise (e.g. Bench Press 3x10)"
+            value={exerciseInput}
+            onChange={(e) => setExerciseInput(e.target.value)}
+          />
+
+          <button onClick={addExercise}>
+            Turn in your exercise
+          </button>
+
+
+          {/* Just so we can visually see it as the user */}
+          <ul>
+            {exercises.map((ex, index) => (
+              <li key={index}>{ex}</li>
+            ))}
+          </ul>
+
+          <button className="submit-btn" onClick={submitLog}>
+            Submit
+          </button>
+        </div>
+      )}
+
+      {/* Also here so we can visually see it as the user */}
+      {jsonOutput && (
+        <pre className="json-output">
+          {jsonOutput}
+        </pre>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
