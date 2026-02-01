@@ -2,27 +2,91 @@ import { useState } from "react";
 import "./App.css";
 
 function App() {
-  const [showLog, setShowLog] = useState(false);
-  const [exerciseInput, setExerciseInput] = useState("");
-  const [exercises, setExercises] = useState([]);
-  const [jsonOutput, setJsonOutput] = useState(null);
 
-  const addExercise = () => {
-    if (exerciseInput.trim() === "") return; // Catches empty inputs and stops it early
 
-    setExercises([...exercises, exerciseInput]); // Adds exercise
-     
-    setExerciseInput(""); // Deletes input after added
+  // Change to having 1 array of objects
+  const [logs, setLogs] = useState([]);
+
+  // Makes a new log
+  const createLog = () => {
+
+    setLogs([
+      ...logs,
+      {
+        id: Date.now(),
+        exerciseInput: "",
+        exercises: [],
+        jsonOutput: null,
+      },
+    ]);
+
   };
 
-  // This makes the JSON
-  const submitLog = () => {
-    const log = {
-      date: new Date().toISOString(),
-      exercises: exercises,
-    };
+  // const [showLog, setShowLog] = useState(false);
+  // const [exerciseInput, setExerciseInput] = useState("");
+  // const [exercises, setExercises] = useState([]);
+  // const [jsonOutput, setJsonOutput] = useState(null);
 
-    setJsonOutput(JSON.stringify(log, null, 2));
+
+  const updateInput = (id, value) => {
+    setLogs(
+      logs.map((log) =>
+        log.id === id ?
+        { ...log, exerciseInput: value} // update the right log
+        : log // leave the rest the same
+    )
+    );
+  };
+
+  // // Add an exercise to the right log (it takes in id as a parameter)
+  // const addExercise = (id) => {
+  //   setLogs(
+  //     logs.map((log) => 
+  //       log.id === id && log.exerciseInput.trim() !== ""  // Checks id and catches empty inputs and stops it early
+  //       ? {
+  //           ...log,
+  //           exercises: [...log.exercises, log.exerciseInput],
+  //           exerciseInput: "", // clear input after adding
+  //         }
+  //         : log
+  //     )
+  // );
+
+   // Add exercise to the correct log
+  const addExercise = (id) => {
+    setLogs(
+      logs.map((log) =>
+        log.id === id && log.exerciseInput.trim() !== ""
+          ? {
+              ...log,
+              exercises: [...log.exercises, log.exerciseInput],
+              exerciseInput: "",
+            }
+          : log
+      )
+    );
+  }; // Fixed
+  
+
+  // This makes the JSON
+  const submitLog = (id) => {
+    setLogs(
+      logs.map((log) =>
+        log.id === id
+          ? {
+              ...log,
+              jsonOutput: JSON.stringify( // stringify turns objects and turns it into json text
+                {
+                  date: new Date().toISOString(),
+                  exercises: log.exercises,
+                },
+                null,
+                2 // pretty-print JSON
+              ),
+            }
+          : log
+      )
+    );
   };
 
   return (
@@ -31,45 +95,51 @@ function App() {
       {/* Frontend Magic */}
       <h1>Fitness Diary 🏋️‍♂️</h1>
 
-      <button onClick={() => setShowLog(true)}>
-        Make the fitness log
+      {/* Button for NEW fitness log */}
+      <button onClick={createLog}>
+        Make a new fitness log
       </button>
 
-      {showLog && (
-        <div className="log-card">
+       {/* Render ALL fitness logs */}
+      {logs.map((log, index) => (
+        <div className="log-card" key={log.id}>
+          <h3>Workout #{index + 1}</h3>
 
-          {/* Standard input box */}
+          {/* Input field for the exercises */}
           <input
             type="text"
-            placeholder="Enter exercise (e.g. Bench Press 3x10)"
-            value={exerciseInput}
-            onChange={(e) => setExerciseInput(e.target.value)}
+            placeholder="Enter exercise (e.g. Deadlift 3x5)"
+            value={log.exerciseInput}
+            onChange={(e) => updateInput(log.id, e.target.value)}
           />
 
-          <button onClick={addExercise}>
+          {/* Adds the exercise to this log */}
+          <button onClick={() => addExercise(log.id)}>
             Turn in your exercise
           </button>
 
-
-          {/* Just so we can visually see it as the user */}
+          {/* Display exercises already added */}
           <ul>
-            {exercises.map((ex, index) => (
-              <li key={index}>{ex}</li>
+            {log.exercises.map((ex, i) => (
+              <li key={i}>{ex}</li>
             ))}
           </ul>
 
-          <button className="submit-btn" onClick={submitLog}>
+          {/* Submit button converts this log to JSON */}
+          <button className="submit-btn" onClick={() => submitLog(log.id)}>
             Submit
           </button>
-        </div>
-      )}
 
-      {/* Also here so we can visually see it as the user */}
-      {jsonOutput && (
-        <pre className="json-output">
-          {jsonOutput}
-        </pre>
-      )}
+          {/* Show JSON only AFTER submission */}
+          {log.jsonOutput && (
+            <pre className="json-output">
+              {log.jsonOutput}
+            </pre>
+          )}
+        </div>
+      ))}
+      
+      
     </div>
   );
 }
