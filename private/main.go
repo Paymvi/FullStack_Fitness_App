@@ -6,12 +6,11 @@ package main
 
 import (
 	"log"
-	"os"
 )
 
 // main () - The entry point of the Fitness App server.
 func main() {
-	uri := os.Getenv("MONGO_URI")
+	uri := "mongodb://localhost:27017"
 	db, err := DBConnect(uri)
 	if err != nil {
 		log.Fatal("Server failed to connect to MongoDB!\n", err)
