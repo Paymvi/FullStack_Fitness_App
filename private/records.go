@@ -6,22 +6,22 @@ package Fitness_App
 
 // TimestampRecord - A single Unix timestamp used to index each row.
 type TimestampRecord struct {
-	Timestamp uint64
+	Timestamp uint64 `json:"timestamp" bson:"timestamp"`
 }
 
 // WeightLiftingRecord - Tracks user-entered data for weight lifting.
 type WeightLiftingRecord struct {
-	Timestamp TimestampRecord
-	Exercise  string
-	WeightLbs uint32
-	TotalSets uint32
+	Timestamp TimestampRecord `json:"timestamp"  bson:"timestamp"`
+	Exercise  string          `json:"exercise"   bson:"exercise"`
+	WeightLbs uint32          `json:"weight_lbs" bson:"weight_lbs"`
+	TotalSets uint32          `json:"total_sets" bson:"total_sets"`
 }
 
 // RunningRecord - Tracks user-entered data for running.
 type RunningRecord struct {
-	Timestamp     TimestampRecord
-	DistanceMiles float32
-	ElapsedSec    float32
-	SpeedMph      float32
-	InclineDeg    float32
+	Timestamp     TimestampRecord `json:"timestamp"      bson:"timestamp"`
+	DistanceMiles float32         `json:"distance_miles" bson:"distance_miles"`
+	ElapsedSecs   float32         `json:"elapsed_secs"   bson:"elapsed_secs"`
+	SpeedMph      float32         `json:"speed_mph"      bson:"speed_mph"`
+	InclineDeg    float32         `json:"incline_deg"    bson:"incline_deg"`
 }

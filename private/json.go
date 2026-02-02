@@ -6,59 +6,59 @@ package Fitness_App
 
 import "encoding/json"
 
-// TimestampToJson () - Converts a TimestampRecord into a Json string.
-func TimestampToJson(record TimestampRecord) string {
+// ToJson () - Converts a TimestampRecord into a Json string or returns an error.
+func (record *TimestampRecord) ToJson() (string, error) {
 	bytes, err := json.Marshal(record)
 	if err != nil {
-		return "{}"
+		return "{}", err
 	}
-	return string(bytes)
+	return string(bytes), nil
 }
 
-// TimestampFromJson () - Converts a Json string into a TimestampRecord.
-func TimestampFromJson(text string) TimestampRecord {
+// ToJson () - Converts a WeightLiftingRecord into a Json string or returns an error.
+func (record *WeightLiftingRecord) ToJson() (string, error) {
+	bytes, err := json.Marshal(record)
+	if err != nil {
+		return "{}", err
+	}
+	return string(bytes), nil
+}
+
+// ToJson () - Converts a RunningRecord into a Json string or returns an error.
+func (record *RunningRecord) ToJson() (string, error) {
+	bytes, err := json.Marshal(record)
+	if err != nil {
+		return "{}", err
+	}
+	return string(bytes), nil
+}
+
+// TimestampFromJson () - Converts a Json string into a TimestampRecord or returns an error.
+func TimestampFromJson(text string) (TimestampRecord, error) {
 	record := TimestampRecord{}
 	err := json.Unmarshal([]byte(text), &record)
 	if err != nil {
-		return TimestampRecord{}
+		return TimestampRecord{}, err
 	}
-	return record
+	return record, nil
 }
 
-// WeightLiftingToJson () - Converts a WeightLiftingRecord into a Json string.
-func WeightLiftingToJson(record WeightLiftingRecord) string {
-	bytes, err := json.Marshal(record)
-	if err != nil {
-		return "{}"
-	}
-	return string(bytes)
-}
-
-// WeightLiftingFromJson () - Converts a Json string into a WeightLiftingRecord.
-func WeightLiftingFromJson(text string) WeightLiftingRecord {
+// WeightLiftingFromJson () - Converts a Json string into a WeightLiftingRecord or returns an error.
+func WeightLiftingFromJson(text string) (WeightLiftingRecord, error) {
 	record := WeightLiftingRecord{}
 	err := json.Unmarshal([]byte(text), &record)
 	if err != nil {
-		return WeightLiftingRecord{}
+		return WeightLiftingRecord{}, err
 	}
-	return record
+	return record, nil
 }
 
-// RunningToJson () - Converts a RunningRecord into a Json string.
-func RunningToJson(record RunningRecord) string {
-	bytes, err := json.Marshal(record)
-	if err != nil {
-		return "{}"
-	}
-	return string(bytes)
-}
-
-// RunningFromJson () - Converts a Json string into a RunningRecord.
-func RunningFromJson(text string) RunningRecord {
+// RunningFromJson () - Converts a Json string into a RunningRecord or returns an error.
+func RunningFromJson(text string) (RunningRecord, error) {
 	record := RunningRecord{}
 	err := json.Unmarshal([]byte(text), &record)
 	if err != nil {
-		return RunningRecord{}
+		return RunningRecord{}, err
 	}
-	return record
+	return record, nil
 }
