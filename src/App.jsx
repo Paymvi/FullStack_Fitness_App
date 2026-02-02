@@ -14,19 +14,13 @@ function App() {
       ...logs,
       {
         id: Date.now(),
-        exerciseInput: "",
-        exercises: [],
-        jsonOutput: null,
+        type: null, // This was added to account for the differnt types of workouts
+        data: {},
+        jsonOutput: null
       },
     ]);
 
   };
-
-  // const [showLog, setShowLog] = useState(false);
-  // const [exerciseInput, setExerciseInput] = useState("");
-  // const [exercises, setExercises] = useState([]);
-  // const [jsonOutput, setJsonOutput] = useState(null);
-
 
   const updateInput = (id, value) => {
     setLogs(
@@ -38,19 +32,6 @@ function App() {
     );
   };
 
-  // // Add an exercise to the right log (it takes in id as a parameter)
-  // const addExercise = (id) => {
-  //   setLogs(
-  //     logs.map((log) => 
-  //       log.id === id && log.exerciseInput.trim() !== ""  // Checks id and catches empty inputs and stops it early
-  //       ? {
-  //           ...log,
-  //           exercises: [...log.exercises, log.exerciseInput],
-  //           exerciseInput: "", // clear input after adding
-  //         }
-  //         : log
-  //     )
-  // );
 
    // Add exercise to the correct log
   const addExercise = (id) => {
@@ -68,32 +49,53 @@ function App() {
   }; // Fixed
   
 
-  // This makes the JSON
+  // This makes the JSON summary for a particular log
   const submitLog = (id) => {
+
+    // Update log state
     setLogs(
       logs.map((log) =>
-        log.id === id
+        log.id === id // Find the right log
           ? {
+              // Keep existing stuff
               ...log,
+
               jsonOutput: JSON.stringify( // stringify turns objects and turns it into json text
                 {
-                  date: new Date().toISOString(),
-                  exercises: log.exercises,
+                  timestamp: Date.now(),
+                  ...(log.type === "lift"
+                    ? {
+                        // Lift custom fields
+                        exercise: log.data.exercise,
+                        weight_lbs: log.data.weight_lbs,
+                        total_sets: log.data.total_sets,
+                      }
+                    : {
+                        // Run custom fields
+                        distance_miles: log.data.distance_miles,
+                        elapsed_secs: log.data.elapsed_secs,
+                        speed_mph:
+                          log.data.elapsed_secs
+                            ? log.data.distance_miles / (log.data.elapsed_secs / 3600)
+                            : 0,
+                        incline_deg: log.data.incline_deg,
+                      }),
                 },
                 null,
-                2 // pretty-print JSON
+                2 // Keep pretty print w/ 2 space indent
               ),
             }
-          : log
+          : log // Return other logs unchanged
       )
     );
   };
+
 
   return (
     <div className="app">
 
       {/* Frontend Magic */}
-      <h1>Fitness Diary 🏋️‍♂️</h1>
+      <h1>Fitness Logs 🏋️‍♂️</h1>
 
       {/* Button for NEW fitness log */}
       <button onClick={createLog}>
@@ -105,25 +107,154 @@ function App() {
         <div className="log-card" key={log.id}>
           <h3>Workout #{index + 1}</h3>
 
-          {/* Input field for the exercises */}
-          <input
-            type="text"
-            placeholder="Enter exercise (e.g. Deadlift 3x5)"
-            value={log.exerciseInput}
-            onChange={(e) => updateInput(log.id, e.target.value)}
-          />
 
-          {/* Adds the exercise to this log */}
-          <button onClick={() => addExercise(log.id)}>
-            Turn in your exercise
-          </button>
+        
+        {/* Section to choose workout type */}
+          {log.type === null && (
+            <div className="type-selector">
+              <button
+                className="run-btn"
+                onClick={() =>
+                  setLogs(
+                    logs.map((l) =>
+                      l.id === log.id ? { ...l, type: "run" } : l
+                    )
+                  )
+                }
+              >
+                🏃 Run
+              </button>
 
-          {/* Display exercises already added */}
-          <ul>
-            {log.exercises.map((ex, i) => (
-              <li key={i}>{ex}</li>
-            ))}
-          </ul>
+              <button
+                className="lift-btn"
+                onClick={() =>
+                  setLogs(
+                    logs.map((l) =>
+                      l.id === log.id ? { ...l, type: "lift" } : l
+                    )
+                  )
+                }
+              >
+                🏋️ Lift
+              </button>
+            </div>
+          )}
+
+
+        {/* Lifting Custom Form */}
+
+        {log.type === "lift" && (
+          <div className="lift-form">
+            <input
+              placeholder="Exercise (e.g. Bench Press)"
+              onChange={(e) =>
+                setLogs(
+                  logs.map((l) =>
+                    l.id === log.id
+                      ? {
+                          ...l,
+                          data: { ...l.data, exercise: e.target.value },
+                        }
+                      : l
+                  )
+                )
+              }
+            />
+
+            <input
+              type="number"
+              placeholder="Weight (lbs)"
+              onChange={(e) =>
+                setLogs(
+                  logs.map((l) =>
+                    l.id === log.id
+                      ? {
+                          ...l,
+                          data: { ...l.data, weight_lbs: Number(e.target.value) },
+                        }
+                      : l
+                  )
+                )
+              }
+            />
+
+            <input
+              type="number"
+              placeholder="Total sets"
+              onChange={(e) =>
+                setLogs(
+                  logs.map((l) =>
+                    l.id === log.id
+                      ? {
+                          ...l,
+                          data: { ...l.data, total_sets: Number(e.target.value) },
+                        }
+                      : l
+                  )
+                )
+              }
+            />
+          </div>
+        )}
+
+
+
+        {/* Running custom form */}
+        {log.type === "run" && (
+          <div className="run-form">
+            <input
+              type="number"
+              placeholder="Distance (miles)"
+              onChange={(e) =>
+                setLogs(
+                  logs.map((l) =>
+                    l.id === log.id
+                      ? {
+                          ...l,
+                          data: { ...l.data, distance_miles: Number(e.target.value) },
+                        }
+                      : l
+                  )
+                )
+              }
+            />
+
+            <input
+              type="number"
+              placeholder="Elapsed time (seconds)"
+              onChange={(e) =>
+                setLogs(
+                  logs.map((l) =>
+                    l.id === log.id
+                      ? {
+                          ...l,
+                          data: { ...l.data, elapsed_secs: Number(e.target.value) },
+                        }
+                      : l
+                  )
+                )
+              }
+            />
+
+            <input
+              type="number"
+              placeholder="Incline (degrees)"
+              onChange={(e) =>
+                setLogs(
+                  logs.map((l) =>
+                    l.id === log.id
+                      ? {
+                          ...l,
+                          data: { ...l.data, incline_deg: Number(e.target.value) },
+                        }
+                      : l
+                  )
+                )
+              }
+            />
+          </div>
+        )}
+
 
           {/* Submit button converts this log to JSON */}
           <button className="submit-btn" onClick={() => submitLog(log.id)}>
