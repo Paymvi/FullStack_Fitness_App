@@ -5,9 +5,7 @@
 package Fitness_App
 
 // TimestampRecord - A single Unix timestamp used to index each row.
-type TimestampRecord struct {
-	Timestamp uint64 `json:"timestamp" bson:"timestamp"`
-}
+type TimestampRecord uint64
 
 // WeightLiftingRecord - Tracks user-entered data for weight lifting.
 type WeightLiftingRecord struct {
