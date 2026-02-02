@@ -9,9 +9,9 @@ export class Server {
         this.serverLink = serverLink
     }
 
-    // Sends data in a JSON string to the server and returns the result code. 
+    // Sends and receives data in a JSON string to the server and returns the result code.
     // Will throw an error on bad input or failure.
-    async sendJson(path, text) {
+    async postJson(path, text) {
         const result = await fetch(`${this.serverLink}${path}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -26,27 +26,27 @@ export class Server {
     // Asynchronously returns an array of numbers containing date timestamps.
     // Will throw an error on failure.
     async getDates() {
-        return this.sendJson('/api/getDates', {})
+        return this.postJson('/api/getDates', {})
     }
 
     // Asynchronously deletes the date with the given timestamp.
     // Will throw an error on bad input or failure.
     async delDate(timestamp) {
-        return this.sendJson('/api/delDate', timestamp)
+        return this.postJson('/api/delDate', timestamp)
     }
 
     // Asynchronously returns the weight lifting data from the given timestamp.
     // Returns an empty prototype if no matching timestamp was found.
     // Will throw an error on bad input or failure.
     async getWeight(timestamp) {
-        return this.sendJson('/api/getWeight', timestamp)
+        return this.postJson('/api/getWeight', timestamp)
     }
 
     // Asynchronously returns the running data from the given timestamp.
     // Returns an empty prototype if no matching timestamp was found.
     // Will throw an error on bad input or failure.
     async getRun(timestamp) {
-        return this.sendJson('/api/getRun', timestamp)
+        return this.postJson('/api/getRun', timestamp)
     }
 
     // Asynchronously enters workout data with with given timestamp.
@@ -57,7 +57,7 @@ export class Server {
             weight_lifting: weight ?? null,
             running: run ?? null
         }
-        return this.sendJson('/api/enterWorkout', workout)
+        return this.postJson('/api/enterWorkout', workout)
     }
 }
 
