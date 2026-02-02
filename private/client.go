@@ -24,26 +24,38 @@ type Client struct {
 func RunServer(db *DBConnection) {
 	http.HandleFunc("/api/getDates", func(writer http.ResponseWriter, request *http.Request) {
 		client := Client{db, writer, request}
+		client.Init()
 		client.GetDates()
 	})
 	http.HandleFunc("/api/delDate", func(writer http.ResponseWriter, request *http.Request) {
 		client := Client{db, writer, request}
+		client.Init()
 		client.DelDate()
 	})
 	http.HandleFunc("/api/getWeight", func(writer http.ResponseWriter, request *http.Request) {
 		client := Client{db, writer, request}
+		client.Init()
 		client.GetWeight()
 	})
 	http.HandleFunc("/api/getRun", func(writer http.ResponseWriter, request *http.Request) {
 		client := Client{db, writer, request}
+		client.Init()
 		client.GetRun()
 	})
 	http.HandleFunc("/api/enterWorkout", func(writer http.ResponseWriter, request *http.Request) {
 		client := Client{db, writer, request}
+		client.Init()
 		client.EnterWorkout()
 	})
 	fmt.Println("Server running on port :8080.")
 	log.Fatal("Server crashed!\n", http.ListenAndServe(":8080", nil))
+}
+
+// Init () - Configures an HTTP client.
+func (client *Client) Init() {
+	client.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	client.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	client.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 }
 
 // Validate () - Returns whether a client's request is valid.
