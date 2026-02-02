@@ -1,45 +1,55 @@
 // .go
-// Fitness App - Serialization Functions
+// Fitness App - JSON Serialization Functions
 // by Kyle Furey
 
-package Fitness_App
+package main
 
 import "encoding/json"
 
-// ToJson () - Converts a WeightLiftingRecord into a Json string or returns an error.
-func (record *WeightLiftingRecord) ToJson() (string, error) {
-	bytes, err := json.Marshal(record)
+type TimestampRecordArray []TimestampRecord
+
+// ToJson () - Converts a TimestampRecord array into a JSON string or returns an error.
+func (records TimestampRecordArray) ToJson() string {
+	bytes, err := json.Marshal(records)
 	if err != nil {
-		return "{}", err
+		return "[]"
 	}
-	return string(bytes), nil
+	return string(bytes)
 }
 
-// ToJson () - Converts a RunningRecord into a Json string or returns an error.
-func (record *RunningRecord) ToJson() (string, error) {
-	bytes, err := json.Marshal(record)
+// ToJson () - Converts a WeightLiftingRecord into a JSON string or returns an error.
+func (record *WeightLiftingRecord) ToJson() string {
+	bytes, err := json.Marshal(*record)
 	if err != nil {
-		return "{}", err
+		return "{}"
 	}
-	return string(bytes), nil
+	return string(bytes)
 }
 
-// WeightLiftingFromJson () - Converts a Json string into a WeightLiftingRecord or returns an error.
-func WeightLiftingFromJson(text string) (WeightLiftingRecord, error) {
-	record := WeightLiftingRecord{}
-	err := json.Unmarshal([]byte(text), &record)
+// ToJson () - Converts a RunningRecord into a JSON string or returns an error.
+func (record *RunningRecord) ToJson() string {
+	bytes, err := json.Marshal(*record)
 	if err != nil {
-		return WeightLiftingRecord{}, err
+		return "{}"
 	}
-	return record, nil
+	return string(bytes)
 }
 
-// RunningFromJson () - Converts a Json string into a RunningRecord or returns an error.
-func RunningFromJson(text string) (RunningRecord, error) {
-	record := RunningRecord{}
-	err := json.Unmarshal([]byte(text), &record)
-	if err != nil {
-		return RunningRecord{}, err
+// WorkoutFromJson () - Converts a JSON string into workout data or returns an error.
+func WorkoutFromJson(text string) (TimestampRecord, bool, WeightLiftingRecord, bool, RunningRecord, error) {
+	var fmt struct {
+		Timestamp     TimestampRecord      `json:"date"`
+		WeightLifting *WeightLiftingRecord `json:"weight_lifting,omitempty"`
+		Running       *RunningRecord       `json:"running,omitempty"`
 	}
-	return record, nil
+	err := json.Unmarshal([]byte(text), &fmt)
+	if err != nil {
+		return 0, false, WeightLiftingRecord{}, false, RunningRecord{}, err
+	}
+	if fmt.Timestamp == 0 {
+		return 0, false, WeightLiftingRecord{}, false, RunningRecord{}, err
+	}
+	wlExists := fmt.WeightLifting != nil
+	rExists := fmt.Running != nil
+	return fmt.Timestamp, wlExists, *fmt.WeightLifting, rExists, *fmt.Running, nil
 }

@@ -2,7 +2,7 @@
 // Fitness App - Table Row Declarations
 // by Kyle Furey
 
-package Fitness_App
+package main
 
 // TimestampRecord - A single Unix timestamp used to index each row.
 type TimestampRecord uint64

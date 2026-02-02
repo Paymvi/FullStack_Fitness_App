@@ -1,11 +1,12 @@
 // .go
-// Fitness App - MongoDB Database Functions
+// Fitness App - MongoDB Functions
 // by Kyle Furey
 
-package Fitness_App
+package main
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -73,7 +74,7 @@ func (db *DBConnection) Fetch() ([]TimestampRecord, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(ctx)
+	defer func() { _ = cursor.Close(ctx) }()
 	var timestamps []TimestampRecord
 	if err := cursor.All(ctx, &timestamps); err != nil {
 		return nil, err
@@ -120,7 +121,7 @@ func (db *DBConnection) Find(
 	wlFilter := bson.M{"timestamp": timestamp}
 	wlFound := true
 	if err := db.WeightLifting.FindOne(ctx, wlFilter).Decode(&wl); err != nil {
-		if err == mongo.ErrNoDocuments {
+		if errors.Is(err, mongo.ErrNoDocuments) {
 			wlFound = false
 		} else {
 			return false, wl, false, r, err
@@ -129,7 +130,7 @@ func (db *DBConnection) Find(
 	runFilter := bson.M{"timestamp": timestamp}
 	rFound := true
 	if err := db.Running.FindOne(ctx, runFilter).Decode(&r); err != nil {
-		if err == mongo.ErrNoDocuments {
+		if errors.Is(err, mongo.ErrNoDocuments) {
 			rFound = false
 		} else {
 			return wlFound, wl, false, r, err
