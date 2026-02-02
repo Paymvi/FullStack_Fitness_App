@@ -24,42 +24,57 @@ type Client struct {
 func RunServer(db *DBConnection) {
 	http.HandleFunc("/api/getDates", func(writer http.ResponseWriter, request *http.Request) {
 		client := Client{db, writer, request}
-		client.Init()
+		if !client.Init() {
+			return
+		}
+		log.Println("POST - getDates()")
 		client.GetDates()
 	})
 	http.HandleFunc("/api/delDate", func(writer http.ResponseWriter, request *http.Request) {
 		client := Client{db, writer, request}
-		client.Init()
+		if !client.Init() {
+			return
+		}
+		log.Println("POST - delDate()")
 		client.DelDate()
 	})
 	http.HandleFunc("/api/getWeight", func(writer http.ResponseWriter, request *http.Request) {
 		client := Client{db, writer, request}
-		client.Init()
+		if !client.Init() {
+			return
+		}
+		log.Println("POST - getWeight()")
 		client.GetWeight()
 	})
 	http.HandleFunc("/api/getRun", func(writer http.ResponseWriter, request *http.Request) {
 		client := Client{db, writer, request}
-		client.Init()
+		if !client.Init() {
+			return
+		}
+		log.Println("POST - getRun()")
 		client.GetRun()
 	})
 	http.HandleFunc("/api/enterWorkout", func(writer http.ResponseWriter, request *http.Request) {
 		client := Client{db, writer, request}
-		client.Init()
+		if !client.Init() {
+			return
+		}
+		log.Println("POST - enterWorkout()")
 		client.EnterWorkout()
 	})
 	fmt.Println("Server running on port :8080.")
 	log.Fatal("Server crashed!\n", http.ListenAndServe(":8080", nil))
 }
 
-// Init () - Configures an HTTP client.
-func (client *Client) Init() {
+// Init () - Configures an HTTP client and returns whether it was successful.
+func (client *Client) Init() bool {
 	client.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	client.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	client.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-}
-
-// Validate () - Returns whether a client's request is valid.
-func (client *Client) Validate() bool {
+	if client.Request.Method == http.MethodOptions {
+		client.Writer.WriteHeader(http.StatusOK)
+		return false
+	}
 	if client.Request.Method != http.MethodPost {
 		http.Error(client.Writer, "Invalid request!", http.StatusMethodNotAllowed)
 		return false
@@ -114,9 +129,6 @@ func (client *Client) SendError(err error, status int) {
 
 // GetDates () - Allows a client to receive a list of their timestamps.
 func (client *Client) GetDates() {
-	if !client.Validate() {
-		return
-	}
 	records, err := client.Database.Fetch()
 	if err != nil {
 		client.SendError(err, http.StatusInternalServerError)
@@ -127,9 +139,6 @@ func (client *Client) GetDates() {
 
 // DelDate () - Allows a client to delete a timestamps.
 func (client *Client) DelDate() {
-	if !client.Validate() {
-		return
-	}
 	timestamp, err := client.ReceiveTimestamp()
 	if err != nil {
 		client.SendError(err, http.StatusBadRequest)
@@ -141,9 +150,6 @@ func (client *Client) DelDate() {
 
 // GetWeight () - Allows a client to get weight lifting data from a timestamp.
 func (client *Client) GetWeight() {
-	if !client.Validate() {
-		return
-	}
 	timestamp, err := client.ReceiveTimestamp()
 	if err != nil {
 		client.SendError(err, http.StatusBadRequest)
@@ -163,9 +169,6 @@ func (client *Client) GetWeight() {
 
 // GetRun () - Allows a client to get running data from a timestamp.
 func (client *Client) GetRun() {
-	if !client.Validate() {
-		return
-	}
 	timestamp, err := client.ReceiveTimestamp()
 	if err != nil {
 		client.SendError(err, http.StatusBadRequest)
@@ -185,9 +188,6 @@ func (client *Client) GetRun() {
 
 // EnterWorkout () - Allows a client to enter a new workout.
 func (client *Client) EnterWorkout() {
-	if !client.Validate() {
-		return
-	}
 	timestamp, wEntered, wl, rEntered, r, err := client.ReceiveWorkout()
 	if err != nil {
 		client.SendError(err, http.StatusBadRequest)

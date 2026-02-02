@@ -50,6 +50,14 @@ func WorkoutFromJson(text string) (TimestampRecord, bool, WeightLiftingRecord, b
 		return 0, false, WeightLiftingRecord{}, false, RunningRecord{}, err
 	}
 	wlExists := fmt.WeightLifting != nil
+	var wl WeightLiftingRecord
+	if wlExists {
+		wl = *fmt.WeightLifting
+	}
 	rExists := fmt.Running != nil
-	return fmt.Timestamp, wlExists, *fmt.WeightLifting, rExists, *fmt.Running, nil
+	var r RunningRecord
+	if rExists {
+		r = *fmt.Running
+	}
+	return fmt.Timestamp, wlExists, wl, rExists, r, nil
 }
