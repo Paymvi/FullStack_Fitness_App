@@ -75,9 +75,16 @@ func (db *DBConnection) Fetch() ([]TimestampRecord, error) {
 		return nil, err
 	}
 	defer func() { _ = cursor.Close(ctx) }()
-	var timestamps []TimestampRecord
-	if err := cursor.All(ctx, &timestamps); err != nil {
+	type TimestampRecordWrapper struct {
+		Timestamp TimestampRecord `bson:"timestamp"`
+	}
+	var fmt []TimestampRecordWrapper
+	if err := cursor.All(ctx, &fmt); err != nil {
 		return nil, err
+	}
+	timestamps := make([]TimestampRecord, len(fmt))
+	for i, d := range fmt {
+		timestamps[i] = d.Timestamp
 	}
 	return timestamps, nil
 }
@@ -94,7 +101,7 @@ func (db *DBConnection) Insert(
 	defer cancel()
 	weightLifting.Timestamp = timestamp
 	running.Timestamp = timestamp
-	if _, err := db.Timestamps.InsertOne(ctx, timestamp); err != nil {
+	if _, err := db.Timestamps.InsertOne(ctx, bson.M{"timestamp": timestamp}); err != nil {
 		return err
 	}
 	if submitWeightLifting {
