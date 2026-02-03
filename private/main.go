@@ -4,9 +4,7 @@
 
 package main
 
-import (
-	"log"
-)
+import "log"
 
 // main () - The entry point of the Fitness App server.
 func main() {
