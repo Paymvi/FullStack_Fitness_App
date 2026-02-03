@@ -14,7 +14,7 @@ function App() {
       ...logs,
       {
         id: Date.now(),
-        type: null, // This was added to account for the differnt types of workouts
+        type: null, // This was added to account for the different types of workouts
         data: {},
         jsonOutput: null
       },
@@ -49,45 +49,66 @@ function App() {
   }; // Fixed
   
 
-  // This makes the JSON summary for a particular log
-  const submitLog = (id) => {
+  // This sends the JSON to the backend
+  const submitLog = async (id) => {
 
-    // Update log state
-    setLogs(
-      logs.map((log) =>
-        log.id === id // Find the right log
-          ? {
-              // Keep existing stuff
-              ...log,
+    console.log("🟢 submitLog called with id:", id); // For debugging purposes
 
-              jsonOutput: JSON.stringify( // stringify turns objects and turns it into json text
-                {
-                  timestamp: Date.now(),
-                  ...(log.type === "lift"
-                    ? {
-                        // Lift custom fields
-                        exercise: log.data.exercise,
-                        weight_lbs: log.data.weight_lbs,
-                        total_sets: log.data.total_sets,
-                      }
-                    : {
-                        // Run custom fields
-                        distance_miles: log.data.distance_miles,
-                        elapsed_secs: log.data.elapsed_secs,
-                        speed_mph:
-                          log.data.elapsed_secs
-                            ? log.data.distance_miles / (log.data.elapsed_secs / 3600)
-                            : 0,
-                        incline_deg: log.data.incline_deg,
-                      }),
-                },
-                null,
-                2 // Keep pretty print w/ 2 space indent
-              ),
-            }
-          : log // Return other logs unchanged
-      )
-    );
+    /* 
+    Changes after adding backend:
+    - removed setLogs() because you don't need to update the UI state to talk to the backend
+    - construct "payload" as a plain JS object, then use JSON.stringify(payload) when sending it to the API
+    - made the function async
+    - added the fetch() call to save the workout
+    - added a try/catch block for error handling
+    */
+
+    const log = logs.find(l => l.id === id);
+    if (!log) return;
+
+    // JS object to send to the backend API (which persists to the database)
+    const payload = {
+      timestamp: Date.now(),
+      ...(log.type === "lift"
+        ? {
+            // Lift custom fields
+            exercise: log.data.exercise,
+            weight_lbs: log.data.weight_lbs,
+            total_sets: log.data.total_sets,
+          }
+        : {
+            // Run custom fields
+            distance_miles: log.data.distance_miles,
+            elapsed_secs: log.data.elapsed_secs,
+            speed_mph:
+              log.data.elapsed_secs
+                ? log.data.distance_miles / (log.data.elapsed_secs / 3600)
+                : 0,
+            incline_deg: log.data.incline_deg,
+          }),
+
+    };
+
+    console.log(" Sending:", payload);
+
+
+    try {
+
+      // Actually sending it to the database
+      const res = await fetch("http://localhost:8080/api/enterWorkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // just specifies it is sending a json
+        },
+        body: JSON.stringify(payload), // convert JS object to JSON string for HTTP
+      });
+
+      console.log("workout saved!")
+    
+    } catch (err){
+      console.error("Failed to send workout:", err);
+    }
+
   };
 
 
