@@ -44,7 +44,15 @@ func WorkoutFromJson(text string) (TimestampRecord, bool, WeightLiftingRecord, b
 	}
 	err := json.Unmarshal([]byte(text), &fmt)
 	if err != nil {
-		return 0, false, WeightLiftingRecord{}, false, RunningRecord{}, err
+		err := json.Unmarshal([]byte(text), fmt.WeightLifting)
+		if err != nil {
+			err := json.Unmarshal([]byte(text), fmt.Running)
+			if err != nil {
+				return 0, false, WeightLiftingRecord{}, false, RunningRecord{}, err
+			}
+			return fmt.Running.Timestamp, false, WeightLiftingRecord{}, true, *fmt.Running, nil
+		}
+		return fmt.WeightLifting.Timestamp, true, *fmt.WeightLifting, false, RunningRecord{}, nil
 	}
 	if fmt.Timestamp == 0 {
 		return 0, false, WeightLiftingRecord{}, false, RunningRecord{}, err

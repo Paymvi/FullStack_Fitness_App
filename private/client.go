@@ -124,7 +124,12 @@ func (client *Client) SendJson(text string, status int) {
 
 // SendError () - Informs the client of an error.
 func (client *Client) SendError(err error, status int) {
-	http.Error(client.Writer, err.Error(), status)
+	if err != nil {
+		http.Error(client.Writer, err.Error(), status)
+		log.Println(err.Error())
+		return
+	}
+	client.Writer.WriteHeader(http.StatusNoContent)
 }
 
 // GetDates () - Allows a client to receive a list of their timestamps.
@@ -144,8 +149,7 @@ func (client *Client) DelDate() {
 		client.SendError(err, http.StatusBadRequest)
 		return
 	}
-	_ = client.Database.Delete(timestamp)
-	client.Writer.WriteHeader(http.StatusNoContent)
+	client.SendError(client.Database.Delete(timestamp), http.StatusBadRequest)
 }
 
 // GetWeight () - Allows a client to get weight lifting data from a timestamp.
@@ -193,6 +197,10 @@ func (client *Client) EnterWorkout() {
 		client.SendError(err, http.StatusBadRequest)
 		return
 	}
-	_ = client.Database.Insert(timestamp, wEntered, wl, rEntered, r)
+	err = client.Database.Insert(timestamp, wEntered, wl, rEntered, r)
+	if err != nil {
+		client.SendError(err, http.StatusBadRequest)
+		return
+	}
 	client.Writer.WriteHeader(http.StatusCreated)
 }
