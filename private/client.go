@@ -20,6 +20,15 @@ type Client struct {
 	Request  *http.Request
 }
 
+// SetCORS() - Allows the CORS headers to be present before the first response write
+// Prevents browsers from blocking requests
+// Written by Ishmael
+func SetCORS(w http.ResponseWriter){
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+}
+
 // RunServer () - Binds functions and runs the server until termination.
 func RunServer(db *DBConnection) {
 	http.HandleFunc("/api/getDates", func(writer http.ResponseWriter, request *http.Request) {
@@ -55,6 +64,14 @@ func RunServer(db *DBConnection) {
 		client.GetRun()
 	})
 	http.HandleFunc("/api/enterWorkout", func(writer http.ResponseWriter, request *http.Request) {
+		
+		SetCORS(writer)
+
+		if request.Method == http.MethodOptions {
+			writer.WriteHeader(http.StatusOK)
+			return
+		}
+		
 		client := Client{db, writer, request}
 		if !client.Init() {
 			return
