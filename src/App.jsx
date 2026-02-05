@@ -7,6 +7,9 @@ function App() {
   // Change to having 1 array of objects
   const [logs, setLogs] = useState([]);
 
+  // In order to make multiple tabs... make another state. Default to the log tab.
+  const [activeTab, setActiveTab] = useState("log");
+
   // Makes a new log
   const createLog = () => {
 
@@ -118,182 +121,221 @@ function App() {
       {/* Frontend Magic */}
       <h1>Fitness Logs 🏋️‍♂️</h1>
 
-      {/* Button for NEW fitness log */}
-      <button onClick={createLog}>
-        Make a new fitness log
-      </button>
 
-       {/* Render ALL fitness logs */}
-      {logs.map((log, index) => (
-        <div className="log-card" key={log.id}>
-          <h3>Workout #{index + 1}</h3>
+      {/* Tab buttons */}
+      <div className="tabs">
+
+        {/* Log tab */}
+        <button
+          className={activeTab === "log" ? "active" : ""}
+          onClick={() => setActiveTab("log")}>
+          New Log
+        </button>
+
+        {/* Summary */}
+        <button
+          className={activeTab === "summary" ? "active" : ""}
+          onClick={() => setActiveTab("summary")}>
+          Summary
+        </button>
+
+      </div>
 
 
-        
-        {/* Section to choose workout type */}
-          {log.type === null && (
-            <div className="type-selector">
-              <button
-                className="run-btn"
-                onClick={() =>
+      {/* The Log Tab Section */}
+      {activeTab === "log" && (
+        <>
+        {/* Button for NEW fitness log */}
+        <button onClick={createLog}>
+          Make a new fitness log
+        </button>
+
+        {/* Render ALL fitness logs */}
+        {logs.map((log, index) => (
+          <div className="log-card" key={log.id}>
+            <h3>Workout #{index + 1}</h3>
+
+
+          
+          {/* Section to choose workout type */}
+            {log.type === null && (
+              <div className="type-selector">
+                <button
+                  className="run-btn"
+                  onClick={() =>
+                    setLogs(
+                      logs.map((l) =>
+                        l.id === log.id ? { ...l, type: "run" } : l
+                      )
+                    )
+                  }
+                >
+                  🏃 Run
+                </button>
+
+                <button
+                  className="lift-btn"
+                  onClick={() =>
+                    setLogs(
+                      logs.map((l) =>
+                        l.id === log.id ? { ...l, type: "lift" } : l
+                      )
+                    )
+                  }
+                >
+                  🏋️ Lift
+                </button>
+              </div>
+            )}
+
+
+          {/* Lifting Custom Form */}
+
+          {log.type === "lift" && (
+            <div className="lift-form">
+              <input
+                placeholder="Exercise (e.g. Bench Press)"
+                onChange={(e) =>
                   setLogs(
                     logs.map((l) =>
-                      l.id === log.id ? { ...l, type: "run" } : l
+                      l.id === log.id
+                        ? {
+                            ...l,
+                            data: { ...l.data, exercise: e.target.value },
+                          }
+                        : l
                     )
                   )
                 }
-              >
-                🏃 Run
-              </button>
+              />
 
-              <button
-                className="lift-btn"
-                onClick={() =>
+              <input
+                type="number"
+                placeholder="Weight (lbs)"
+                onChange={(e) =>
                   setLogs(
                     logs.map((l) =>
-                      l.id === log.id ? { ...l, type: "lift" } : l
+                      l.id === log.id
+                        ? {
+                            ...l,
+                            data: { ...l.data, weight_lbs: Number(e.target.value) },
+                          }
+                        : l
                     )
                   )
                 }
-              >
-                🏋️ Lift
-              </button>
+              />
+
+              <input
+                type="number"
+                placeholder="Total sets"
+                onChange={(e) =>
+                  setLogs(
+                    logs.map((l) =>
+                      l.id === log.id
+                        ? {
+                            ...l,
+                            data: { ...l.data, total_sets: Number(e.target.value) },
+                          }
+                        : l
+                    )
+                  )
+                }
+              />
             </div>
           )}
 
 
-        {/* Lifting Custom Form */}
 
-        {log.type === "lift" && (
-          <div className="lift-form">
-            <input
-              placeholder="Exercise (e.g. Bench Press)"
-              onChange={(e) =>
-                setLogs(
-                  logs.map((l) =>
-                    l.id === log.id
-                      ? {
-                          ...l,
-                          data: { ...l.data, exercise: e.target.value },
-                        }
-                      : l
+          {/* Running custom form */}
+          {log.type === "run" && (
+            <div className="run-form">
+              <input
+                type="number"
+                placeholder="Distance (miles)"
+                onChange={(e) =>
+                  setLogs(
+                    logs.map((l) =>
+                      l.id === log.id
+                        ? {
+                            ...l,
+                            data: { ...l.data, distance_miles: Number(e.target.value) },
+                          }
+                        : l
+                    )
                   )
-                )
-              }
-            />
+                }
+              />
 
-            <input
-              type="number"
-              placeholder="Weight (lbs)"
-              onChange={(e) =>
-                setLogs(
-                  logs.map((l) =>
-                    l.id === log.id
-                      ? {
-                          ...l,
-                          data: { ...l.data, weight_lbs: Number(e.target.value) },
-                        }
-                      : l
+              <input
+                type="number"
+                placeholder="Elapsed time (seconds)"
+                onChange={(e) =>
+                  setLogs(
+                    logs.map((l) =>
+                      l.id === log.id
+                        ? {
+                            ...l,
+                            data: { ...l.data, elapsed_secs: Number(e.target.value) },
+                          }
+                        : l
+                    )
                   )
-                )
-              }
-            />
+                }
+              />
 
-            <input
-              type="number"
-              placeholder="Total sets"
-              onChange={(e) =>
-                setLogs(
-                  logs.map((l) =>
-                    l.id === log.id
-                      ? {
-                          ...l,
-                          data: { ...l.data, total_sets: Number(e.target.value) },
-                        }
-                      : l
+              <input
+                type="number"
+                placeholder="Incline (degrees)"
+                onChange={(e) =>
+                  setLogs(
+                    logs.map((l) =>
+                      l.id === log.id
+                        ? {
+                            ...l,
+                            data: { ...l.data, incline_deg: Number(e.target.value) },
+                          }
+                        : l
+                    )
                   )
-                )
-              }
-            />
-          </div>
-        )}
-
-
-
-        {/* Running custom form */}
-        {log.type === "run" && (
-          <div className="run-form">
-            <input
-              type="number"
-              placeholder="Distance (miles)"
-              onChange={(e) =>
-                setLogs(
-                  logs.map((l) =>
-                    l.id === log.id
-                      ? {
-                          ...l,
-                          data: { ...l.data, distance_miles: Number(e.target.value) },
-                        }
-                      : l
-                  )
-                )
-              }
-            />
-
-            <input
-              type="number"
-              placeholder="Elapsed time (seconds)"
-              onChange={(e) =>
-                setLogs(
-                  logs.map((l) =>
-                    l.id === log.id
-                      ? {
-                          ...l,
-                          data: { ...l.data, elapsed_secs: Number(e.target.value) },
-                        }
-                      : l
-                  )
-                )
-              }
-            />
-
-            <input
-              type="number"
-              placeholder="Incline (degrees)"
-              onChange={(e) =>
-                setLogs(
-                  logs.map((l) =>
-                    l.id === log.id
-                      ? {
-                          ...l,
-                          data: { ...l.data, incline_deg: Number(e.target.value) },
-                        }
-                      : l
-                  )
-                )
-              }
-            />
-          </div>
-        )}
-
-
-          {/* Submit button converts this log to JSON */}
-          <button className="submit-btn" onClick={() => submitLog(log.id)}>
-            Submit
-          </button>
-
-          {/* Show JSON only AFTER submission */}
-          {log.jsonOutput && (
-            <pre className="json-output">
-              {log.jsonOutput}
-            </pre>
+                }
+              />
+            </div>
           )}
-        </div>
-      ))}
+
+
+            {/* Submit button converts this log to JSON */}
+            <button className="submit-btn" onClick={() => submitLog(log.id)}>
+              Submit
+            </button>
+
+            {/* Show JSON only AFTER submission */}
+            {log.jsonOutput && (
+              <pre className="json-output">
+                {log.jsonOutput}
+              </pre>
+            )}
+          </div>
+        ))}
+
+      </> 
+
+    )}
+
+
+    {/* The Summary Section */}
+    {activeTab === "summary" && ( 
+    <div className="summary">
+      <h2>Summary View</h2>
+      <p>This is where workout history will go</p>
+    </div>
+
+  )}
       
       
     </div>
-  );
+  )
+  
 }
 
 export default App;
