@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 function App() {
@@ -9,6 +9,11 @@ function App() {
 
   // In order to make multiple tabs... make another state. Default to the log tab.
   const [activeTab, setActiveTab] = useState("log");
+
+  // Make a state for the summary data
+  const [summary, setSummary] = useState([]);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+
 
   // Makes a new log
   const createLog = () => {
@@ -113,6 +118,81 @@ function App() {
     }
 
   };
+
+
+  // Gets the summary from the database!
+  const fetchSummary = async () => {
+    setSummaryLoading(true);
+
+    try {
+      // 1. Get all timestamps
+      const tsRes = await fetch("http://localhost:8080/api/getDates", {
+        method: "POST",
+      });
+
+      // Turn the json into a JS array
+      const timestamps = await tsRes.json();
+
+      const workouts = [];
+
+      // For each timestampe fetch the workout
+      for (const ts of timestamps) {
+        // 2. Try to fetch a weight lifting record
+        const wRes = await fetch("http://localhost:8080/api/getWeight", {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: ts.toString(),
+        });
+
+        // Parse the json
+        const weight = await wRes.json();
+
+        // If there is an object it is a lift
+        if (Object.keys(weight).length > 0) {
+          workouts.push({
+            type: "lift",
+            timestamp: ts,
+            ...weight,      // exercise, weight_lbs, total_sets, etc.
+          });
+          continue;
+        }
+
+        // 3. Try running this time
+        const rRes = await fetch("http://localhost:8080/api/getRun", {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: ts.toString(),
+        });
+
+        // Parse the json
+        const run = await rRes.json();
+
+        // If there is an object it is a run
+        if (Object.keys(run).length > 0) {
+          workouts.push({
+            type: "run",
+            timestamp: ts,
+            ...run,         // distance, speed, incline, etc.
+          });
+        }
+      }
+
+      // update the summary state
+      setSummary(workouts);
+      } catch (err) {
+        console.error("Failed to fetch summary:", err);
+      } finally {
+        setSummaryLoading(false);
+      }
+  };
+
+  useEffect(() => {
+    if (activeTab === "summary") {
+      fetchSummary();
+    }
+  }, [activeTab]);
+
+
 
 
   return (
@@ -324,13 +404,40 @@ function App() {
 
 
     {/* The Summary Section */}
-    {activeTab === "summary" && ( 
-    <div className="summary">
-      <h2>Summary View</h2>
-      <p>This is where workout history will go</p>
-    </div>
+   
+   {activeTab === "summary" && (
+      <div className="summary">
+          <h2>Workout Summary 📊</h2>
 
-  )}
+          {summaryLoading && <p>Loading workouts...</p>}
+
+          {!summaryLoading && summary.length === 0 && (
+            <p>No workouts yet.</p>
+          )}
+
+          {summary.map((w, i) => (
+            <div key={i} className="summary-card">
+              <strong>{new Date(w.timestamp).toLocaleString()}</strong>
+
+              {w.type === "lift" && (
+                <p>
+                  🏋️ {w.exercise} : {w.weight_lbs} lbs × {w.total_sets} sets
+                </p>
+              )}
+
+              {w.type === "run" && (
+                <p>
+                  🏃 {w.distance_miles} miles @ {w.speed_mph.toFixed(1)} mph
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+    
+    
+
       
       
     </div>
