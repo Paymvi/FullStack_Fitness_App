@@ -56,3 +56,9 @@ ul {
   font-weight: bold;
   border-bottom: 2px solid white;
 }
+
+.error-msg {
+  color: red;
+  margin-top: 8px;
+  font-weight: bold;
+}

@@ -214,6 +214,33 @@ func (client *Client) EnterWorkout() {
 		client.SendError(err, http.StatusBadRequest)
 		return
 	}
+
+	if wEntered {
+		if wl.WeightLbs < 0 {
+			client.SendError(fmt.Errorf("Weight must be non-negative!"), http.StatusBadRequest)
+			return 
+		}
+		if wl.TotalSets < 0{
+			client.SendError(fmt.Errorf("Total sets must be non-negative!"), http.StatusBadRequest)
+			return 
+		}
+	}
+
+	if rEntered{
+		if r.DistanceMiles < 0 {
+			client.SendError(fmt.Errorf("Weight must be non-negative!"), http.StatusBadRequest)
+			return 
+		}
+		if r.ElapsedSecs < 0 {
+			client.SendError(fmt.Errorf("Elapsed time must be non-negative!"), http.StatusBadRequest)
+			return 
+		}
+		if r.InclineDeg < 0 {
+			client.SendError(fmt.Errorf("Incline must be non-negative!"), http.StatusBadRequest)
+			return 
+		}
+	}
+
 	err = client.Database.Insert(timestamp, wEntered, wl, rEntered, r)
 	if err != nil {
 		client.SendError(err, http.StatusBadRequest)

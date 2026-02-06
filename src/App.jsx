@@ -24,7 +24,8 @@ function App() {
         id: Date.now(),
         type: null, // This was added to account for the different types of workouts
         data: {},
-        jsonOutput: null
+        jsonOutput: null,
+        error: null,
       },
     ]);
 
@@ -110,6 +111,17 @@ function App() {
         },
         body: JSON.stringify(payload), // convert JS object to JSON string for HTTP
       });
+
+      if(!res.ok){
+        setLogs(logs.map((l) =>
+          l.id === id ? { ...l, error: "Invalid submission!" } : l
+        ));
+        return;
+      }
+
+      setLogs(logs.map((l) =>
+        l.id === id ? {...l, error: null} : 1
+      ));
 
       console.log("workout saved!")
     
@@ -291,8 +303,14 @@ function App() {
 
               <input
                 type="number"
+                min="0"
                 placeholder="Weight (lbs)"
-                onChange={(e) =>
+                onChange={(e) => {
+                  
+                  const val = Number(e.target.value);
+                  if (val < 0){
+                    return;
+                  }
                   setLogs(
                     logs.map((l) =>
                       l.id === log.id
@@ -302,14 +320,20 @@ function App() {
                           }
                         : l
                     )
-                  )
-                }
+                  );
+                }}
               />
 
               <input
                 type="number"
+                min="0"
                 placeholder="Total sets"
-                onChange={(e) =>
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0){
+                    return;
+                  }
+
                   setLogs(
                     logs.map((l) =>
                       l.id === log.id
@@ -319,8 +343,8 @@ function App() {
                           }
                         : l
                     )
-                  )
-                }
+                  );
+                }}
               />
             </div>
           )}
@@ -332,8 +356,14 @@ function App() {
             <div className="run-form">
               <input
                 type="number"
+                min="0"
                 placeholder="Distance (miles)"
-                onChange={(e) =>
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0){
+                    return;
+                  }
+
                   setLogs(
                     logs.map((l) =>
                       l.id === log.id
@@ -343,14 +373,20 @@ function App() {
                           }
                         : l
                     )
-                  )
-                }
+                  );
+                }}
               />
 
               <input
                 type="number"
+                min="0"
                 placeholder="Elapsed time (seconds)"
-                onChange={(e) =>
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0){
+                    return;
+                  }
+
                   setLogs(
                     logs.map((l) =>
                       l.id === log.id
@@ -360,14 +396,20 @@ function App() {
                           }
                         : l
                     )
-                  )
-                }
+                  );
+                }}
               />
 
               <input
                 type="number"
+                min="0"
                 placeholder="Incline (degrees)"
-                onChange={(e) =>
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0){
+                    return;
+                  }
+
                   setLogs(
                     logs.map((l) =>
                       l.id === log.id
@@ -377,8 +419,8 @@ function App() {
                           }
                         : l
                     )
-                  )
-                }
+                  );
+                }}
               />
             </div>
           )}
@@ -388,6 +430,10 @@ function App() {
             <button className="submit-btn" onClick={() => submitLog(log.id)}>
               Submit
             </button>
+
+            {log.error && (
+              <p className="error-msg">❌ {log.error}</p>
+            )}
 
             {/* Show JSON only AFTER submission */}
             {log.jsonOutput && (
