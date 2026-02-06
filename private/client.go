@@ -215,6 +215,7 @@ func (client *Client) EnterWorkout() {
 		return
 	}
 
+	// Handles negative value inputs for type: weight
 	if wEntered {
 		if wl.WeightLbs < 0 {
 			client.SendError(fmt.Errorf("Weight must be non-negative!"), http.StatusBadRequest)
@@ -226,6 +227,7 @@ func (client *Client) EnterWorkout() {
 		}
 	}
 
+	// Handles negative value inputs for type: running
 	if rEntered{
 		if r.DistanceMiles < 0 {
 			client.SendError(fmt.Errorf("Weight must be non-negative!"), http.StatusBadRequest)

@@ -25,7 +25,7 @@ function App() {
         type: null, // This was added to account for the different types of workouts
         data: {},
         jsonOutput: null,
-        error: null,
+        error: null, // This was added to account for producing error messages
       },
     ]);
 
@@ -112,6 +112,7 @@ function App() {
         body: JSON.stringify(payload), // convert JS object to JSON string for HTTP
       });
 
+      // Check if backend rejected the request to recieve submission
       if(!res.ok){
         setLogs(logs.map((l) =>
           l.id === id ? { ...l, error: "Invalid submission!" } : l
@@ -120,7 +121,7 @@ function App() {
       }
 
       setLogs(logs.map((l) =>
-        l.id === id ? {...l, error: null} : 1
+        l.id === id ? {...l, error: null} : l
       ));
 
       console.log("workout saved!")
