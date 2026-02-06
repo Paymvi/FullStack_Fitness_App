@@ -229,7 +229,7 @@ function App() {
         <button
           className={activeTab === "summary" ? "active" : ""}
           onClick={() => setActiveTab("summary")}>
-          Summary
+          Workout Summaries
         </button>
 
       </div>
@@ -441,8 +441,8 @@ function App() {
         ))}
 
         {/* Button for NEW fitness log */}
-        <button onClick={createLog}>
-          Make a new fitness log
+        <button className="new" onClick={createLog}>
+          +
         </button>
 
       </> 
@@ -454,7 +454,7 @@ function App() {
    
    {activeTab === "summary" && (
       <div className="summary">
-          <h2>Workout Summary 📊</h2>
+          {/* <h2>Workout Summary 📊</h2> */}
 
           {summaryLoading && <p>Loading workouts...</p>}
 
