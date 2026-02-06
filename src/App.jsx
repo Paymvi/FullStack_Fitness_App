@@ -237,11 +237,6 @@ function App() {
       {/* The Log Tab Section */}
       {activeTab === "log" && (
         <>
-        {/* Button for NEW fitness log */}
-        <button onClick={createLog}>
-          Make a new fitness log
-        </button>
-
         {/* Render ALL fitness logs */}
         {logs.map((log, index) => (
           <div className="log-card" key={log.id}>
@@ -443,6 +438,11 @@ function App() {
             )}
           </div>
         ))}
+
+        {/* Button for NEW fitness log */}
+        <button onClick={createLog}>
+          Make a new fitness log
+        </button>
 
       </> 
 
