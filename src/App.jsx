@@ -14,6 +14,62 @@ function App() {
   const [summary, setSummary] = useState([]);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
+  // For the query section
+  const [queryResult, setQueryResult] = useState(null);
+  const [queryLoading, setQueryLoading] = useState(false);
+
+
+
+  // Sample query: find last bench press
+  const fetchLastBenchPress = async () => {
+    setQueryLoading(true);
+    setQueryResult(null);
+
+    try {
+      // 1. Get all timestamps
+      const tsRes = await fetch("http://localhost:8080/api/getDates", {
+        method: "POST",
+      });
+
+      const timestamps = await tsRes.json();
+
+      // 2. Sort newest >> oldest
+      const sorted = [...timestamps].sort((a, b) => b - a);
+
+      // 3. Walk backwards through time
+      for (const ts of sorted) {
+        const wRes = await fetch("http://localhost:8080/api/getWeight", {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: ts.toString(),
+        });
+
+        const lift = await wRes.json();
+
+        if (
+          lift &&
+          lift.exercise &&
+          lift.exercise.toLowerCase().includes("bench")
+        ) {
+          setQueryResult({
+            timestamp: ts,
+            ...lift,
+          });
+          return;
+        }
+      }
+
+      // 4. No bench press found
+      setQueryResult({ error: "No bench press found." });
+
+    } catch (err) {
+      console.error(err);
+      setQueryResult({ error: "Failed to run query." });
+    } finally {
+      setQueryLoading(false);
+    }
+  };
+
 
   // Makes a new log
   const createLog = () => {
@@ -230,6 +286,13 @@ function App() {
           className={activeTab === "summary" ? "active" : ""}
           onClick={() => setActiveTab("summary")}>
           Workout Summaries
+        </button>
+
+        {/* Queries */}
+        <button
+          className={activeTab === "queries" ? "active" : ""}
+          onClick={() => setActiveTab("queries")}>
+          Queries
         </button>
 
       </div>
@@ -483,6 +546,34 @@ function App() {
       )}
 
     
+    {/* Query section */}
+    {activeTab === "queries" && (
+      <div className="queries">
+
+        <button onClick={fetchLastBenchPress}>
+          🏋️ Last Bench Press
+        </button>
+
+        {queryLoading && <p>Running query...</p>}
+
+        {queryResult && !queryResult.error && (
+          <div className="query-result">
+            <p>
+              🗓 {new Date(queryResult.timestamp).toLocaleString()}
+            </p>
+            <p>
+              🏋️ {queryResult.weight_lbs} lbs × {queryResult.total_sets} sets
+            </p>
+          </div>
+        )}
+
+        {queryResult?.error && (
+          <p className="error-msg">❌ {queryResult.error}</p>
+        )}
+
+      </div>
+    )}
+
     
 
       
