@@ -20,57 +20,6 @@ function App() {
 
 
 
-  // Sample query: find last bench press
-  const fetchLastBenchPress = async () => {
-    setQueryLoading(true);
-    setQueryResult(null);
-
-    try {
-      // 1. Get all timestamps
-      const tsRes = await fetch("http://localhost:8080/api/getDates", {
-        method: "POST",
-      });
-
-      const timestamps = await tsRes.json();
-
-      // 2. Sort newest >> oldest
-      const sorted = [...timestamps].sort((a, b) => b - a);
-
-      // 3. Walk backwards through time
-      for (const ts of sorted) {
-        const wRes = await fetch("http://localhost:8080/api/getWeight", {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: ts.toString(),
-        });
-
-        const lift = await wRes.json();
-
-        if (
-          lift &&
-          lift.exercise &&
-          lift.exercise.toLowerCase().includes("bench")
-        ) {
-          setQueryResult({
-            timestamp: ts,
-            ...lift,
-          });
-          return;
-        }
-      }
-
-      // 4. No bench press found
-      setQueryResult({ error: "No bench press found." });
-
-    } catch (err) {
-      console.error(err);
-      setQueryResult({ error: "Failed to run query." });
-    } finally {
-      setQueryLoading(false);
-    }
-  };
-
-
   // Makes a new log
   const createLog = () => {
 
@@ -189,70 +138,76 @@ function App() {
   };
 
 
-  // Gets the summary from the database!
+  // Gets ALL workouts from the database (used by summary + queries)
+  const getAllWorkouts = async () => {
+
+    // 1. Get all timestamps
+    const tsRes = await fetch("http://localhost:8080/api/getDates", {
+      method: "POST",
+    });
+
+    // Turn the json into a JS array
+    const timestamps = await tsRes.json();
+
+    const workouts = [];
+
+    // For each timestamp fetch the workout
+    for (const ts of timestamps) {
+
+      // 2. Try to fetch a weight lifting record
+      const wRes = await fetch("http://localhost:8080/api/getWeight", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: ts.toString(),
+      });
+
+      // Parse the json
+      const weight = await wRes.json();
+
+      // If there is an object it is a lift
+      if (Object.keys(weight).length > 0) {
+        workouts.push({
+          type: "lift",
+          timestamp: ts,
+          ...weight, // exercise, weight_lbs, total_sets, etc.
+        });
+        continue;
+      }
+
+      // 3. Try running this time
+      const rRes = await fetch("http://localhost:8080/api/getRun", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: ts.toString(),
+      });
+
+      // Parse the json
+      const run = await rRes.json();
+
+      // If there is an object it is a run
+      if (Object.keys(run).length > 0) {
+        workouts.push({
+          type: "run",
+          timestamp: ts,
+          ...run, // distance, speed, incline, etc.
+        });
+      }
+    }
+    return workouts;
+  };
+
+  // Uses getAllWorkouts and sets the state 
   const fetchSummary = async () => {
     setSummaryLoading(true);
 
     try {
-      // 1. Get all timestamps
-      const tsRes = await fetch("http://localhost:8080/api/getDates", {
-        method: "POST",
-      });
-
-      // Turn the json into a JS array
-      const timestamps = await tsRes.json();
-
-      const workouts = [];
-
-      // For each timestampe fetch the workout
-      for (const ts of timestamps) {
-        // 2. Try to fetch a weight lifting record
-        const wRes = await fetch("http://localhost:8080/api/getWeight", {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: ts.toString(),
-        });
-
-        // Parse the json
-        const weight = await wRes.json();
-
-        // If there is an object it is a lift
-        if (Object.keys(weight).length > 0) {
-          workouts.push({
-            type: "lift",
-            timestamp: ts,
-            ...weight,      // exercise, weight_lbs, total_sets, etc.
-          });
-          continue;
-        }
-
-        // 3. Try running this time
-        const rRes = await fetch("http://localhost:8080/api/getRun", {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: ts.toString(),
-        });
-
-        // Parse the json
-        const run = await rRes.json();
-
-        // If there is an object it is a run
-        if (Object.keys(run).length > 0) {
-          workouts.push({
-            type: "run",
-            timestamp: ts,
-            ...run,         // distance, speed, incline, etc.
-          });
-        }
-      }
-
-      // update the summary state
+      const workouts = await getAllWorkouts();
       setSummary(workouts);
-      } catch (err) {
-        console.error("Failed to fetch summary:", err);
-      } finally {
-        setSummaryLoading(false);
-      }
+    } catch (err) {
+      console.error("Failed to fetch summary:", err);
+    } finally {
+      setSummaryLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -260,6 +215,197 @@ function App() {
       fetchSummary();
     }
   }, [activeTab]);
+
+
+
+  // QUERY SECTION
+
+
+  // Find last bench press
+  const fetchLastBenchPress = async () => {
+    setQueryLoading(true);
+    setQueryResult(null);
+
+    try {
+      // 1. Get all timestamps
+      const tsRes = await fetch("http://localhost:8080/api/getDates", {
+        method: "POST",
+      });
+
+      const timestamps = await tsRes.json();
+
+      // 2. Sort newest >> oldest
+      const sorted = [...timestamps].sort((a, b) => b - a);
+
+      // 3. Walk backwards through time
+      for (const ts of sorted) {
+        const wRes = await fetch("http://localhost:8080/api/getWeight", {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: ts.toString(),
+        });
+
+        const lift = await wRes.json();
+
+        if (
+          lift &&
+          lift.exercise &&
+          lift.exercise.toLowerCase().includes("bench")
+        ) {
+          setQueryResult({
+            type: "lift",
+            timestamp: ts,
+            ...lift,
+          });
+          return;
+        }
+      }
+
+      // 4. No bench press found
+      setQueryResult({ error: "No bench press found." });
+
+    } catch (err) {
+      console.error(err);
+      setQueryResult({ error: "Failed to run query." });
+    } finally {
+      setQueryLoading(false); // Stops the loading state
+    }
+  };
+
+  // Find the most recent lift (any exercise)
+  const fetchLastLift = async () => {
+    setQueryLoading(true);
+    setQueryResult(null);
+
+    try {
+      const workouts = await getAllWorkouts();
+
+      // Filter all the workouts to just the lifting ones
+      const lifts = workouts.filter(w => w.type === "lift");
+
+      // If there are not lifts return an error
+      if (lifts.length === 0) {
+        setQueryResult({ error: "No lifts found." });
+        return;
+      }
+
+      // Sort lifts by timestamp (newest first) and then take the first one [0]
+      const last = lifts.sort((a, b) => b.timestamp - a.timestamp)[0];
+
+      // Store the result to display
+      setQueryResult(last);
+    } catch {
+      setQueryResult({ error: "Failed to fetch last lift." });
+    } finally {
+      setQueryLoading(false); // Stops the loading state
+    }
+  };
+
+  // Finds the heaviest lift recorded in the database
+  const fetchHeaviestLift = async () => {
+    setQueryLoading(true);
+    setQueryResult(null);
+
+    try {
+      const workouts = await getAllWorkouts();
+
+      // Filter all workouts to just the lifting ones
+      const lifts = workouts.filter(w => w.type === "lift");
+
+      // If there are not lifts return an error
+      if (lifts.length === 0) {
+        setQueryResult({ error: "No lifts found." });
+        return;
+      }
+
+      // Sort lifts by weight (heaviest first) and take the first one
+      const heaviest = lifts.sort((a, b) => b.weight_lbs - a.weight_lbs)[0];
+      setQueryResult(heaviest);
+    } finally {
+      setQueryLoading(false); // Stops the loading state
+    }
+  };
+
+  // Find the most recent run
+  const fetchLastRun = async () => {
+    setQueryLoading(true);
+    setQueryResult(null);
+
+    try {
+      const workouts = await getAllWorkouts();
+
+      // Filter to just the running workouts
+      const runs = workouts.filter(w => w.type === "run");
+
+      // If there are no runs return an error
+      if (runs.length === 0) {
+        setQueryResult({ error: "No runs found." });
+        return;
+      }
+
+      // Sort runs by timestamp (newest first) and take the first one
+      const last = runs.sort((a, b) => b.timestamp - a.timestamp)[0];
+      setQueryResult(last);
+    } catch {
+      setQueryResult({ error: "Failed to fetch last run." });
+    } finally {
+      setQueryLoading(false); // Stops the loading state
+    }
+  };
+
+  // Find the longest run
+  const fetchLongestRun = async () => {
+    setQueryLoading(true);
+    setQueryResult(null);
+
+    try {
+      const workouts = await getAllWorkouts();
+
+      // Filter to just the running workouts
+      const runs = workouts.filter(w => w.type === "run" && w.distance_miles);
+
+      // If there are no runs, return an error
+      if (runs.length === 0) {
+        setQueryResult({ error: "No runs found." });
+        return;
+      }
+
+      // Sort runs by distance (longest first) and then take the first one
+      const longest = runs.sort((a, b) => b.distance_miles - a.distance_miles)[0];
+      setQueryResult(longest);
+    } catch {
+      setQueryResult({ error: "Failed to fetch longest run." });
+    } finally {
+      setQueryLoading(false); // Stops the loading state
+    }
+  };
+
+  // Find the festest run
+  const fetchFastestRun = async () => {
+    setQueryLoading(true);
+    setQueryResult(null);
+
+    try {
+      const workouts = await getAllWorkouts();
+
+      // Filter to just the running workouts
+      const runs = workouts.filter(w => w.type === "run" && w.speed_mph);
+
+      // If there are no runs, return an error
+      if (runs.length === 0) {
+        setQueryResult({ error: "No runs found." });
+        return;
+      }
+
+      // Sort runs by speed (fastest first) and take the first one
+      const fastest = runs.sort((a, b) => b.speed_mph - a.speed_mph)[0];
+      setQueryResult(fastest);
+    } catch {
+      setQueryResult({ error: "Failed to fetch fastest run." });
+    } finally {
+      setQueryLoading(false); // Stops the loading state
+    }
+  };
 
 
 
@@ -550,20 +696,33 @@ function App() {
     {activeTab === "queries" && (
       <div className="queries">
 
-        <button onClick={fetchLastBenchPress}>
-          🏋️ Last Bench Press
-        </button>
+        <button onClick={fetchLastBenchPress}>🏋️ Last Bench Press</button>
+        <button onClick={fetchLastLift}>🏋️ Last Lift</button>
+        <button onClick={fetchHeaviestLift}>📈 Heaviest Lift</button>
+        <br></br>
+        <button onClick={fetchLastRun}>🏃 Last Run</button>
+        <button onClick={fetchLongestRun}>📏 Longest Run</button>
+        <button onClick={fetchFastestRun}>⚡ Fastest Run</button>
 
         {queryLoading && <p>Running query...</p>}
 
         {queryResult && !queryResult.error && (
           <div className="query-result">
-            <p>
-              🗓 {new Date(queryResult.timestamp).toLocaleString()}
-            </p>
-            <p>
-              🏋️ {queryResult.weight_lbs} lbs × {queryResult.total_sets} sets
-            </p>
+            <p>🗓 {new Date(queryResult.timestamp).toLocaleString()}</p>
+
+            {queryResult.type === "lift" && (
+              <p>
+                🏋️ {queryResult.exercise}: {queryResult.weight_lbs} lbs ×{" "}
+                {queryResult.total_sets} sets
+              </p>
+            )}
+
+            {queryResult.type === "run" && (
+              <p>
+                🏃 {queryResult.distance_miles} miles @{" "}
+                {queryResult.speed_mph.toFixed(1)} mph
+              </p>
+            )}
           </div>
         )}
 
