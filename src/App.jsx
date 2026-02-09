@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
+// Frontend code
+// By: Chelsea Alysson Ongjoco
+
 function App() {
 
 
