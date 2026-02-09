@@ -137,4 +137,80 @@ input {
   border-radius: 6px;
   font-weight: 400;
   color: #5f6679;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.type-selector button:hover {
+  transform: translateY(-1px);
+}
+
+/* For query section */
+.queries {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Side-by-side grid */
+.query-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  
+}
+
+/* Groups */
+.query-group {
+  background: #f8f8f8;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 2px solid #5f6679;
+}
+
+.query-group h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  opacity: 0.85;
+  
+}
+
+/* Buttons */
+.query-group button {
+  display: block;
+  width: 100%;
+  margin: 0.4rem 0;
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #ffffff;
+  font-size: 0.9rem;
+  transition: background 0.2s, transform 0.1s;
+  border: 2px solid #9ba1b0;
+}
+
+.query-group button:hover {
+  background: #f3f3f3;
+  transform: translateY(-1px);
+}
+
+/* Result card */
+.query-result {
+  background: #eafff0;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 2px solid #5f6679;
+}
+
+/* Loading */
+.query-loading {
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* Mobile fallback */
+@media (max-width: 600px) {
+  .query-grid {
+    grid-template-columns: 1fr;
+  }
 }

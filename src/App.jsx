@@ -696,13 +696,22 @@ function App() {
     {activeTab === "queries" && (
       <div className="queries">
 
-        <button onClick={fetchLastBenchPress}>🏋️ Last Bench Press</button>
-        <button onClick={fetchLastLift}>🏋️ Last Lift</button>
-        <button onClick={fetchHeaviestLift}>📈 Heaviest Lift</button>
-        <br></br>
-        <button onClick={fetchLastRun}>🏃 Last Run</button>
-        <button onClick={fetchLongestRun}>📏 Longest Run</button>
-        <button onClick={fetchFastestRun}>⚡ Fastest Run</button>
+        
+        <div className="query-grid">
+          <div className="query-group">
+            <h3>🏋️ Lifts</h3>
+            <button onClick={fetchLastBenchPress}> 🏋️ Last Bench Press</button>
+            <button onClick={fetchLastLift}>🏋️ Last Lift</button>
+            <button onClick={fetchHeaviestLift}>📈 Heaviest Lift</button>
+          </div>
+
+          <div className="query-group">
+            <h3>🏃 Runs</h3>
+            <button onClick={fetchLastRun}>🏃 Last Run</button>
+            <button onClick={fetchLongestRun}>📏 Longest Run</button>
+            <button onClick={fetchFastestRun}>⚡ Fastest Run</button>
+          </div>
+        </div>
 
         {queryLoading && <p>Running query...</p>}
 
